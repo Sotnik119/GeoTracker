@@ -1,7 +1,12 @@
 package com.sotnik.geotracker.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.location.Location
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.view.View
+import android.widget.Toast
 import com.sotnik.geotracker.data.DataProcessor
 import com.sotnik.geotracker.data.Point
 import com.sotnik.geotracker.data.Route
@@ -11,6 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.async
+
 
 class DetailPresenter() {
 
@@ -115,6 +121,8 @@ class DetailPresenter() {
             if (startTracking()) {
                 hideButton()
                 async { db.startRoute(currentRoute) }
+            } else {
+                getPermissions()
             }
         })
     }
@@ -129,5 +137,51 @@ class DetailPresenter() {
 
     private fun hideButton() {
         detailActivity.setStartStopButton("", false, View.OnClickListener {})
+    }
+
+
+    private fun getPermissions() {
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(
+                    detailActivity,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(
+                        detailActivity,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                ) {
+                    Toast.makeText(
+                        detailActivity,
+                        "Необходимо дать разрешение на чтение файлов в настройках устройства!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            if (ContextCompat.checkSelfPermission(
+                    detailActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                if (!ActivityCompat.shouldShowRequestPermissionRationale(
+                        detailActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    )
+                ) {
+                    Toast.makeText(
+                        detailActivity,
+                        "Необходимо дать разрешение на чтение файлов в настройках устройства!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        } else {
+            Toast.makeText(
+                detailActivity,
+                "Необходимо дать разрешение на чтение файлов в настройках устройства!",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 }
